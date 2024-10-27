@@ -1,0 +1,90 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<MudThemeProvider Theme="MyCustomTheme"/>
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudAppBar Elevation="3" ToolBarClass="">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" class="d-sm-flex d-md-none"/>
+        <MudImage Src="images/aadb.jpg" Height="50" Class="rounded-lg" ObjectFit="ObjectFit.Cover"/>
+        <MudText Typo="Typo.h6" Color="Color.Primary" Class="ml-3 d-none d-sm-none d-md-flex">Advisory DB</MudText>
+        <MudSpacer />
+        <MudStack Row="true">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.RocketLaunch" Style="@($"background:{Colors.Gray.Lighten3};")">Release Version</MudButton>
+            <AuthorizeView>
+                <Authorized>
+                    <MudButton Href="Account/Manage" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Person" Color="Color.Dark" class="d-none d-sm-none d-md-flex">@context.User.Identity?.Name</MudButton>
+                    @* <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@context.User.Identity?.Name</MudNavLink> *@
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <MudButton Variant="Variant.Filled" ButtonType="ButtonType.Submit" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout">Logout</MudButton>
+                    </form>
+                </Authorized>
+            </AuthorizeView>
+        </MudStack>
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent Class="mt-16 pa-4">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private string? currentUrl;
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+    
+    @* Style="@($"color:{Colors.Red.Darken2}; background:{Colors.Gray.Lighten4};")" *@
+    MudTheme MyCustomTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = Colors.Red.Darken2,
+            Secondary = Colors.Gray.Lighten4,
+            AppbarBackground = Colors.Gray.Lighten4,
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = Colors.Gray.Lighten4,
+            Secondary = Colors.Red.Darken2
+        },
+        
+        @* 
+        LayoutProperties = new LayoutProperties()
+        {
+            DrawerWidthLeft = "260px",
+            DrawerWidthRight = "300px"
+        } *@
+    };
+}
+
+
